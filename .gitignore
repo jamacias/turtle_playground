@@ -1,0 +1,10 @@
+# ROS stuff
+build
+install
+log
+
+# CLang
+.cache
+
+# Editor stuff
+.vscode

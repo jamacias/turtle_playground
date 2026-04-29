@@ -1,0 +1,7 @@
+geometry_msgs/TransformStamped goal_pose
+---
+float32 remaining_distance                 # [m]
+bool success
+---
+float32 remaining_distance                 # [m]
+float32 progress                           # [0.0, 1.0]

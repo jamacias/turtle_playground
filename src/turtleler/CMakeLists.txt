@@ -20,6 +20,8 @@ find_package(tf2_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(turtlesim_msgs REQUIRED)
 find_package(turtleler_msgs REQUIRED)
+find_package(behaviortree_cpp REQUIRED)
+find_package(behaviortree_ros2 REQUIRED)
 
 add_subdirectory(src)
 

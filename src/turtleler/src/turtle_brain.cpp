@@ -5,11 +5,19 @@
 #include "rclcpp_action/rclcpp_action.hpp"
 #include "tf2_ros/transform_broadcaster.h"
 #include "turtleler_msgs/action/navigation_goal.hpp"
+#include "actions/go_to_pose_action.hpp"
 
+#include <filesystem>
 #include <functional>
 #include <memory>
 #include <rclcpp/logging.hpp>
 #include <rclcpp/utilities.hpp>
+
+#include <behaviortree_cpp/behavior_tree.h>
+#include <behaviortree_ros2/bt_action_node.hpp>
+#include <behaviortree_ros2/tree_execution_server.hpp>
+#include <behaviortree_ros2/plugins.hpp>
+
 
 class TurtleBrain : public rclcpp::Node
 {
@@ -22,6 +30,11 @@ public:
         tfPublisher_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
 
         navigationRequester_ = rclcpp_action::create_client<NavigationGoal>(this, "navigation_goal");
+
+        // RosNodeParams params;
+        // params.nh = this->weak_from_this();
+        // params.default_port_value = "navigation_goal";
+        // factory_.registerNodeType<GoToPoseAction>("GoToPoseAction", params);
     }
 
 private:
@@ -31,6 +44,11 @@ private:
     std::unique_ptr<tf2_ros::TransformBroadcaster>                   tfPublisher_;
     geometry_msgs::msg::TransformStamped                             currentGoal_{};
     rclcpp_action::Client<NavigationGoal>::SharedPtr                 navigationRequester_;
+
+    rclcpp::TimerBase::SharedPtr timer_;
+    BT::Blackboard::Ptr          blackboard_;
+    BT::Tree                     tree_;
+    BT::BehaviorTreeFactory      factory_;
 
     void newGoalCallback(const geometry_msgs::msg::PoseStamped::UniquePtr msg)
     {
@@ -55,7 +73,7 @@ private:
 
         tfPublisher_->sendTransform(goalTF);
 
-        requestNavigation();
+        // requestNavigation();
     };
 
     void requestNavigation() const
@@ -112,6 +130,25 @@ private:
 int main(int argc, char* argv[])
 {
     rclcpp::init(argc, argv);
+
+    // auto nh = std::make_shared<rclcpp::Node>("navigation_client");
+    // BehaviorTreeFactory factory;
+    // RosNodeParams params;
+    // params.nh                 = nh;
+    // params.default_port_value = "navigation_goal";
+    //  RCLCPP_INFO(nh->get_logger(), "%s", std::filesystem::current_path().string().c_str());
+    // RegisterRosNode(factory, "install/turtleler/lib/turtleler/libgo_to_pose_plugin.so", params);
+
+    // BehaviorTreeFactory factory;
+
+    // auto node = std::make_shared<rclcpp::Node>("go_to_pose_client");
+    // // provide the ROS node and the name of the action service
+    // RosNodeParams params;
+    // params.nh = node;
+    // params.default_port_value = "navigation_goal";
+    // factory.registerNodeType<GoToPoseAction>("navigation_goal", params);
+    // rclcpp::spin(node);
+
     rclcpp::spin(std::make_shared<TurtleBrain>());
     rclcpp::shutdown();
 

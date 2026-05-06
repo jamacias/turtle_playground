@@ -37,18 +37,6 @@ public:
         return std::nullopt;
     }
 
-    bool onGoalReceived(const std::string& tree_name, const std::string& payload) override
-    {
-        // payload_ = payload;
-        // RCLCPP_INFO(node()->get_logger(), "Payload: '%s'", payload.c_str());
-        // globalBlackboard()->set("payload", payload);
-
-        // std::string dummy{"????"};
-        // const auto rc = globalBlackboard()->get("payload", dummy);
-        // RCLCPP_INFO(node()->get_logger(), "Payload in the blackboard: '%s' (%i)", dummy.c_str(), rc);
-        return true;
-    }
-
 private:
     std::shared_ptr<BT::StdCoutLogger> loggerCout_;
     std::string                        payload_{};

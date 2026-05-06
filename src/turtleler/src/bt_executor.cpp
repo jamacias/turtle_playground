@@ -19,13 +19,8 @@ public:
     {
         loggerCout_ = std::make_shared<BT::StdCoutLogger>(tree);
 
-
-        RCLCPP_INFO(node()->get_logger(), "Payload: '%s'", goalPayload().c_str());
+        RCLCPP_INFO(node()->get_logger(), "%s -- Payload: '%s'", __func__, goalPayload().c_str());
         tree.rootBlackboard()->set("payload", goalPayload());
-
-        std::string dummy{"????"};
-        const auto rc = tree.rootBlackboard()->get("payload", dummy);
-        RCLCPP_INFO(node()->get_logger(), "Payload in the blackboard: '%s' (%i)", dummy.c_str(), rc);
     }
 
     std::optional<std::string> onTreeExecutionCompleted([[maybe_unused]] BT::NodeStatus status,

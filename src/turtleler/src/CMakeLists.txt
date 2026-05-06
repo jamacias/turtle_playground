@@ -37,6 +37,14 @@ target_link_libraries(turtle_brain PRIVATE
   ${btcpp_ros2_interfaces_TARGETS}
 )
 
+add_executable(bt_executor bt_executor.cpp)
+target_link_libraries(bt_executor PRIVATE
+  rclcpp::rclcpp
+  behaviortree_cpp::behaviortree_cpp
+  behaviortree_ros2::behaviortree_ros2
+  ${btcpp_ros2_interfaces_TARGETS}
+)
+
 add_library(go_to_pose_plugin SHARED actions/go_to_pose_action.cpp)
 target_compile_definitions(go_to_pose_plugin PRIVATE BT_PLUGIN_EXPORT)
 target_link_libraries(go_to_pose_plugin 
@@ -46,13 +54,15 @@ target_link_libraries(go_to_pose_plugin
   ${turtleler_msgs_TARGETS}
   behaviortree_cpp::behaviortree_cpp
   behaviortree_ros2::behaviortree_ros2
-  ${btcpp_ros2_interfaces_TARGETS})
+  ${btcpp_ros2_interfaces_TARGETS}
+  yaml-cpp::yaml-cpp)
 
 install(TARGETS
     turtle_tf2_broadcaster
     turtle_controller
     boundary_detector
     turtle_brain
+    bt_executor
     go_to_pose_plugin
     DESTINATION lib/${PROJECT_NAME})
 

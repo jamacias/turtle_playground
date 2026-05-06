@@ -43,16 +43,12 @@ def generate_launch_description():
             ]
         ),
         Node(
-            package='btcpp_ros2_samples',
-            executable='sample_bt_executor',
-            name='sample_bt_executor',
+            package='turtleler',
+            executable='bt_executor',
+            name='bt_executor',
             parameters=[
-                # {'action_name': 'turtle_brain'},
                 {'behavior_trees': ['turtleler/share/behaviour']},
-                {'plugins': [
-                    # 'behaviortree_cpp/bt_plugins',
-                    # 'btcpp_ros2_samples/bt_plugins',
-                    'turtleler/bt_plugins']}
+                {'plugins': ['turtleler/bt_plugins']}
             ]
         ),
     ])

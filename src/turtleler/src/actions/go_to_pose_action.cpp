@@ -4,9 +4,11 @@
 
 bool GoToPoseAction::setGoal(RosActionNode::Goal& goal)
 {
-    // get "order" from the Input port
-    getInput("payload", goal.goal_pose);
-    // return true, if we were able to set the goal correctly.
+    const auto target_pose = getInput<std::string>("target_pose").value();
+    goal = convertFromString<RosActionNode::Goal>(target_pose);
+
+    RCLCPP_INFO(logger(), "%s -- Received request: '%s'", __func__, turtleler_msgs::action::to_yaml(goal, true).c_str());
+
     return true;
 }
 

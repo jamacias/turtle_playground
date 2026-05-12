@@ -17,6 +17,8 @@
   <depend>turtlesim_msgs</depend>
   <depend>turtleler_msgs</depend>
   <depend>behaviortree_cpp</depend>
+  <depend>behaviortree_ros2</depend>
+  <depend>yaml-cpp</depend>
 
   <exec_depend>launch</exec_depend>
   <exec_depend>launch_ros</exec_depend>

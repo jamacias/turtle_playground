@@ -42,4 +42,13 @@ def generate_launch_description():
                 {'turtlename': 'turtle1'}
             ]
         ),
+        Node(
+            package='turtleler',
+            executable='bt_executor',
+            name='bt_executor',
+            parameters=[
+                {'behavior_trees': ['turtleler/share/behaviour']},
+                {'plugins': ['turtleler/bt_plugins']}
+            ]
+        ),
     ])

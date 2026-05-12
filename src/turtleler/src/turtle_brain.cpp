@@ -5,11 +5,19 @@
 #include "rclcpp_action/rclcpp_action.hpp"
 #include "tf2_ros/transform_broadcaster.h"
 #include "turtleler_msgs/action/navigation_goal.hpp"
+#include "actions/go_to_pose_action.hpp"
 
+#include <filesystem>
 #include <functional>
 #include <memory>
 #include <rclcpp/logging.hpp>
 #include <rclcpp/utilities.hpp>
+
+#include <behaviortree_cpp/behavior_tree.h>
+#include <behaviortree_ros2/bt_action_node.hpp>
+#include <behaviortree_ros2/tree_execution_server.hpp>
+#include <behaviortree_ros2/plugins.hpp>
+
 
 class TurtleBrain : public rclcpp::Node
 {
@@ -21,24 +29,24 @@ public:
             "/goal_pose", 10, std::bind(&TurtleBrain::newGoalCallback, this, std::placeholders::_1));
         tfPublisher_ = std::make_unique<tf2_ros::TransformBroadcaster>(*this);
 
-        navigationRequester_ = rclcpp_action::create_client<NavigationGoal>(this, "navigation_goal");
+        treeRequester_ = rclcpp_action::create_client<ExecuteTree>(this, "bt_execution");
     }
 
 private:
-    using NavigationGoal           = turtleler_msgs::action::NavigationGoal;
-    using GoalHandleNavigationGoal = rclcpp_action::ClientGoalHandle<NavigationGoal>;
+    using ExecuteTree              = btcpp_ros2_interfaces::action::ExecuteTree;
+    using ExecuteTreeGoalHandle    = rclcpp_action::ClientGoalHandle<ExecuteTree>;
+
     rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr subscriber_;
     std::unique_ptr<tf2_ros::TransformBroadcaster>                   tfPublisher_;
     geometry_msgs::msg::TransformStamped                             currentGoal_{};
-    rclcpp_action::Client<NavigationGoal>::SharedPtr                 navigationRequester_;
+    rclcpp_action::Client<ExecuteTree>::SharedPtr                    treeRequester_;
 
     void newGoalCallback(const geometry_msgs::msg::PoseStamped::UniquePtr msg)
     {
         if (!msg)
             return;
 
-        RCLCPP_INFO(get_logger(), "%s -- Received message: %s", __func__,
-                    geometry_msgs::msg::to_yaml(*msg, true).c_str());
+        RCLCPP_INFO(get_logger(), "%s -- Received message: %s", __func__, geometry_msgs::msg::to_yaml(*msg, true).c_str());
 
         geometry_msgs::msg::TransformStamped goalTF;
         goalTF.header                  = msg->header;
@@ -55,24 +63,30 @@ private:
 
         tfPublisher_->sendTransform(goalTF);
 
-        requestNavigation();
+        NavigationGoal::Goal goal;
+        goal.goal_pose = goalTF;
+        const auto payload = turtleler_msgs::action::to_yaml(goal, true);
+        RCLCPP_INFO(get_logger(), "%s -- Payload: %s", __func__, payload.c_str());
+
+        requestTree("Navigation", payload);
     };
 
-    void requestNavigation() const
+    void requestTree(const std::string& treeName, const std::string& payload) const
     {
-        if (!navigationRequester_->wait_for_action_server())
+        if (!treeRequester_->wait_for_action_server())
         {
             RCLCPP_ERROR(get_logger(), "%s -- Action server not available after waiting", __func__);
             return;
         }
 
-        auto goalMsg      = NavigationGoal::Goal();
-        goalMsg.goal_pose = currentGoal_;
+        auto goalMsg        = ExecuteTree::Goal();
+        goalMsg.target_tree = treeName;
+        goalMsg.payload     = payload;
 
         RCLCPP_INFO(get_logger(), "%s -- Sending goal", __func__);
 
-        auto sendGoalOptions                   = rclcpp_action::Client<NavigationGoal>::SendGoalOptions();
-        sendGoalOptions.goal_response_callback = [this](const GoalHandleNavigationGoal::SharedPtr& goalHandle)
+        auto sendGoalOptions                   = rclcpp_action::Client<ExecuteTree>::SendGoalOptions();
+        sendGoalOptions.goal_response_callback = [this](const ExecuteTreeGoalHandle::SharedPtr& goalHandle)
         {
             if (!goalHandle)
             {
@@ -85,13 +99,12 @@ private:
         };
 
         sendGoalOptions.feedback_callback =
-            [this](GoalHandleNavigationGoal::SharedPtr, const std::shared_ptr<const NavigationGoal::Feedback> feedback)
+            [this](ExecuteTreeGoalHandle::SharedPtr, const std::shared_ptr<const ExecuteTree::Feedback> feedback)
         {
-            RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 1000, "%s -- Remaining distance: %.3f [m] (%.2f)%%",
-                                 __func__, feedback->remaining_distance, feedback->progress * 100.0f);
+            RCLCPP_INFO(get_logger(), "%s -- Feedback received: %s", __func__, feedback->message.c_str());
         };
 
-        sendGoalOptions.result_callback = [this](const GoalHandleNavigationGoal::WrappedResult& result)
+        sendGoalOptions.result_callback = [this](const ExecuteTreeGoalHandle::WrappedResult& result)
         {
             switch (result.code)
             {
@@ -100,18 +113,16 @@ private:
                 case rclcpp_action::ResultCode::CANCELED:  RCLCPP_ERROR(get_logger(), "Goal was canceled"); return;
                 default:                                   RCLCPP_ERROR(get_logger(), "Unknown result code"); return;
             }
-
-            RCLCPP_INFO(get_logger(), "%s -- Arrived to point with deviation: %.3f [m]", __func__,
-                        result.result->remaining_distance);
         };
 
-        navigationRequester_->async_send_goal(goalMsg, sendGoalOptions);
+        treeRequester_->async_send_goal(goalMsg, sendGoalOptions);
     }
 };
 
 int main(int argc, char* argv[])
 {
     rclcpp::init(argc, argv);
+
     rclcpp::spin(std::make_shared<TurtleBrain>());
     rclcpp::shutdown();
 

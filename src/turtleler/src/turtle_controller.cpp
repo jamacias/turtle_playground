@@ -7,7 +7,9 @@
 #include "turtleler_msgs/action/navigation_goal.hpp"
 
 #include <cmath>
+#include <control_toolbox/pid.hpp>
 #include <functional>
+#include <limits>
 #include <memory>
 #include <rclcpp/logging.hpp>
 #include <rclcpp/rate.hpp>
@@ -18,7 +20,6 @@
 #include <tf2/LinearMath/Vector3.hpp>
 #include <tf2/transform_datatypes.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
-#include <control_toolbox/pid.hpp>
 
 using namespace std::chrono_literals;
 class TurtleController : public rclcpp::Node
@@ -106,29 +107,38 @@ private:
         auto worldTturtle = getPose("world", turtlename_);
 
         float        remainingDistance = calculateDistance(worldTgoal.getOrigin(), worldTturtle.getOrigin());
-        // float        remainingAngle    = calculateAngle(worldTgoal.getRotation(), worldTturtle.getRotation());
-        auto goalInTurtle = worldTturtle.inverse() * worldTgoal.getOrigin();
-        float remainingAngle = worldTturtle.getBasis().getColumn(0).angle(goalInTurtle);
-        const float  startingDistance  = remainingDistance;
-        rclcpp::Time lastTime = get_clock()->now();
-        while (rclcpp::ok() && (remainingDistance > 0.1  || remainingAngle > 0.05))
+        auto         goalInTurtle      = worldTturtle.inverse() * worldTgoal.getOrigin();
+        float        remainingAngle    = std::atan2(goalInTurtle.y(), goalInTurtle.x());
+        const float  startingDistance  = calculateDistance(worldTgoal.getOrigin(), worldTturtle.getOrigin());
+        rclcpp::Time lastTime          = get_clock()->now();
+        while (rclcpp::ok())
         {
+            if (remainingDistance < 0.1 && remainingAngle < 0.05)
+            {
+                RCLCPP_INFO(get_logger(),
+                            "Arrived to target (angle error: %.3f [rad] / %.3f [deg]; distance error: %.3f [m])",
+                            remainingAngle, remainingAngle * 180.0f / M_PI, remainingDistance);
+                break;
+            }
+
             geometry_msgs::msg::Twist command;
             // TODO: cancel action
 
-            worldTturtle             = getPose("world", turtlename_);
-            remainingDistance        = calculateDistance(worldTgoal.getOrigin(), worldTturtle.getOrigin());
-            goalInTurtle = worldTturtle.inverse() * worldTgoal.getOrigin();
+            worldTturtle      = getPose("world", turtlename_);
+            remainingDistance = calculateDistance(worldTgoal.getOrigin(), worldTturtle.getOrigin());
+            goalInTurtle      = worldTturtle.inverse() * worldTgoal.getOrigin();
 
             if (remainingDistance > 0.1)
                 remainingAngle = std::atan2(goalInTurtle.y(), goalInTurtle.x());
             else
                 remainingAngle = worldTturtle.getBasis().getColumn(0).angle(worldTgoal.getBasis().getColumn(0));
 
-            RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 10, "remainingAngle: %.3f [rad] (%.3f deg) (distance: %.2f)", remainingAngle, remainingAngle * 180.0f / M_PI, remainingDistance);
+            RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 10,
+                                 "remainingAngle: %.3f [rad] (%.3f deg) (distance: %.2f)", remainingAngle,
+                                 remainingAngle * 180.0f / M_PI, remainingDistance);
 
             rclcpp::Time time = get_clock()->now();
-            const auto dt = get_clock()->now() - lastTime;
+            const auto   dt   = get_clock()->now() - lastTime;
             if (std::abs(remainingAngle) > 0.05)
             {
                 // Not aligned, rotate

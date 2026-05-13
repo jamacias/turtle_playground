@@ -17,6 +17,7 @@ target_link_libraries(turtle_controller PRIVATE
   ${tf2_geometry_msgs_TARGETS}
   ${turtlesim_msgs_TARGETS}
   ${turtleler_msgs_TARGETS}
+  control_toolbox::control_toolbox
 )
 
 add_executable(boundary_detector boundary_detector.cpp)
@@ -55,7 +56,8 @@ target_link_libraries(go_to_pose_plugin
   behaviortree_cpp::behaviortree_cpp
   behaviortree_ros2::behaviortree_ros2
   ${btcpp_ros2_interfaces_TARGETS}
-  yaml-cpp::yaml-cpp)
+  yaml-cpp::yaml-cpp
+)
 
 install(TARGETS
     turtle_tf2_broadcaster

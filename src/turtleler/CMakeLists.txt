@@ -22,6 +22,7 @@ find_package(turtlesim_msgs REQUIRED)
 find_package(turtleler_msgs REQUIRED)
 find_package(behaviortree_cpp REQUIRED)
 find_package(behaviortree_ros2 REQUIRED)
+find_package(control_toolbox REQUIRED)
 
 include(FetchContent)
 

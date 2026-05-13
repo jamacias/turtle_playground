@@ -6,6 +6,7 @@
 #include "tf2_ros/transform_listener.h"
 #include "turtleler_msgs/action/navigation_goal.hpp"
 
+#include <cmath>
 #include <functional>
 #include <memory>
 #include <rclcpp/logging.hpp>
@@ -13,8 +14,11 @@
 #include <rclcpp_action/create_server.hpp>
 #include <rclcpp_action/server.hpp>
 #include <string>
+#include <tf2/LinearMath/Quaternion.hpp>
+#include <tf2/LinearMath/Vector3.hpp>
 #include <tf2/transform_datatypes.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#include <control_toolbox/pid.hpp>
 
 using namespace std::chrono_literals;
 class TurtleController : public rclcpp::Node
@@ -37,6 +41,20 @@ public:
             std::bind(&TurtleController::acceptCallback, this, std::placeholders::_1));
         tfBuffer_   = std::make_unique<tf2_ros::Buffer>(get_clock());
         tfListener_ = std::make_shared<tf2_ros::TransformListener>(*tfBuffer_);
+
+        {
+            steeringController_ = std::make_unique<control_toolbox::Pid>();
+            control_toolbox::AntiWindupStrategy strategy;
+            strategy.type = control_toolbox::AntiWindupStrategy::NONE;
+            steeringController_->initialize(2.0, 1.0, 0.0, 1.0, 0.1, strategy);
+        }
+
+        {
+            speedController_ = std::make_unique<control_toolbox::Pid>();
+            control_toolbox::AntiWindupStrategy strategy;
+            strategy.type = control_toolbox::AntiWindupStrategy::BACK_CALCULATION;
+            speedController_->initialize(0.3, 0.1, 0.0, 2.0, 0.05, strategy);
+        }
     }
 
 private:
@@ -48,6 +66,8 @@ private:
     rclcpp_action::Server<NavigationGoal>::SharedPtr        navigationActionServer_;
     std::shared_ptr<tf2_ros::TransformListener>             tfListener_{nullptr};
     std::unique_ptr<tf2_ros::Buffer>                        tfBuffer_;
+    std::unique_ptr<control_toolbox::Pid>                   steeringController_;
+    std::unique_ptr<control_toolbox::Pid>                   speedController_;
 
     rclcpp_action::GoalResponse goalCallback(const rclcpp_action::GoalUUID&              uuid,
                                              std::shared_ptr<const NavigationGoal::Goal> goal) const
@@ -85,28 +105,44 @@ private:
 
         auto worldTturtle = getPose("world", turtlename_);
 
-        float       remainingDistance = calculateDistance(worldTgoal.getOrigin(), worldTturtle.getOrigin());
-        const float startingDistance  = remainingDistance;
-        while (rclcpp::ok() && remainingDistance > 0.1)
+        float        remainingDistance = calculateDistance(worldTgoal.getOrigin(), worldTturtle.getOrigin());
+        // float        remainingAngle    = calculateAngle(worldTgoal.getRotation(), worldTturtle.getRotation());
+        auto goalInTurtle = worldTturtle.inverse() * worldTgoal.getOrigin();
+        float remainingAngle = worldTturtle.getBasis().getColumn(0).angle(goalInTurtle);
+        const float  startingDistance  = remainingDistance;
+        rclcpp::Time lastTime = get_clock()->now();
+        while (rclcpp::ok() && (remainingDistance > 0.1  || remainingAngle > 0.05))
         {
             geometry_msgs::msg::Twist command;
             // TODO: cancel action
 
             worldTturtle             = getPose("world", turtlename_);
             remainingDistance        = calculateDistance(worldTgoal.getOrigin(), worldTturtle.getOrigin());
-            const auto pointInTurtle = worldTturtle.inverse() * worldTgoal.getOrigin();
-            if (tf2Fabs(pointInTurtle.y()) > 0.1)
+            goalInTurtle = worldTturtle.inverse() * worldTgoal.getOrigin();
+
+            if (remainingDistance > 0.1)
+                remainingAngle = std::atan2(goalInTurtle.y(), goalInTurtle.x());
+            else
+                remainingAngle = worldTturtle.getBasis().getColumn(0).angle(worldTgoal.getBasis().getColumn(0));
+
+            RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 10, "remainingAngle: %.3f [rad] (%.3f deg) (distance: %.2f)", remainingAngle, remainingAngle * 180.0f / M_PI, remainingDistance);
+
+            rclcpp::Time time = get_clock()->now();
+            const auto dt = get_clock()->now() - lastTime;
+            if (std::abs(remainingAngle) > 0.05)
             {
                 // Not aligned, rotate
                 command.angular.z = 0.6;
+                // command.angular.z = steeringController_->compute_command(remainingAngle, dt);
             }
             else
             {
                 // Aligned enough, move forward
                 command.linear.x = 0.6;
+                // command.linear.x = speedController_->compute_command(remainingDistance, dt);
             }
 
-            if (pointInTurtle.y() < 0)
+            if (remainingAngle < 0)
             {
                 command.angular.z *= -1;
             }
@@ -115,9 +151,11 @@ private:
 
             feedback->progress           = (startingDistance - remainingDistance) / startingDistance;
             feedback->remaining_distance = remainingDistance;
+            feedback->remaining_angle    = remainingAngle;
             goalHandle->publish_feedback(feedback);
 
             controlRate.sleep();
+            lastTime = time;
         }
 
         if (rclcpp::ok())
@@ -127,6 +165,7 @@ private:
             auto result                = std::make_shared<NavigationGoal::Result>();
             result->success            = true;
             result->remaining_distance = remainingDistance;
+            result->remaining_angle    = remainingAngle;
             goalHandle->succeed(result);
             RCLCPP_INFO(get_logger(), "Goal succeeded");
         }
@@ -158,7 +197,7 @@ private:
 
     void sendCommand(const geometry_msgs::msg::Twist& command) const
     {
-        // RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 1, "Publishing: %s - Throttled log",
+        // RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 1000, "Publishing: %s - Throttled log",
         //                      geometry_msgs::msg::to_yaml(command, true).c_str());
         cmdPublisher_->publish(command);
     }

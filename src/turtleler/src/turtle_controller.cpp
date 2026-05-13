@@ -113,7 +113,7 @@ private:
         rclcpp::Time lastTime          = get_clock()->now();
         while (rclcpp::ok())
         {
-            if (remainingDistance < 0.1 && remainingAngle < 0.05)
+            if (remainingDistance < 0.1 && std::abs(remainingAngle) < 0.05)
             {
                 RCLCPP_INFO(get_logger(),
                             "Arrived to target (angle error: %.3f [rad] / %.3f [deg]; distance error: %.3f [m])",

@@ -129,9 +129,23 @@ private:
             goalInTurtle      = worldTturtle.inverse() * worldTgoal.getOrigin();
 
             if (remainingDistance > 0.1)
+            {
                 remainingAngle = std::atan2(goalInTurtle.y(), goalInTurtle.x());
+            }
             else
-                remainingAngle = worldTturtle.getBasis().getColumn(0).angle(worldTgoal.getBasis().getColumn(0));
+            {
+                const auto& vector1 = worldTturtle.getBasis().getColumn(0);
+                const auto& vector2 = worldTgoal.getBasis().getColumn(0);
+                remainingAngle      = std::atan2(vector2.y(), vector2.x()) - std::atan2(vector1.y(), vector1.x());
+                if (remainingAngle > M_PI)
+                {
+                    remainingAngle -= 2 * M_PI;
+                }
+                else if (remainingAngle <= -M_PI)
+                {
+                    remainingAngle += 2 * M_PI;
+                }
+            }
 
             RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 10,
                                  "remainingAngle: %.3f [rad] (%.3f deg) (distance: %.2f)", remainingAngle,

@@ -18,7 +18,7 @@ inline NavigationGoal::Goal convertFromString(StringView str)
         output.goal_pose.child_frame_id       = msg["goal_pose"]["child_frame_id"].as<std::string>();
         output.goal_pose.header.frame_id      = msg["goal_pose"]["header"]["frame_id"].as<std::string>();
         output.goal_pose.header.stamp.sec     = msg["goal_pose"]["header"]["stamp"]["sec"].as<int32_t>();
-        output.goal_pose.header.stamp.nanosec = msg["goal_pose"]["header"]["stamp"]["sec"].as<uint32_t>();
+        output.goal_pose.header.stamp.nanosec = msg["goal_pose"]["header"]["stamp"]["nanosec"].as<uint32_t>();
         output.goal_pose.transform.translation.x = msg["goal_pose"]["transform"]["translation"]["x"].as<double>();
         output.goal_pose.transform.translation.y = msg["goal_pose"]["transform"]["translation"]["y"].as<double>();
         output.goal_pose.transform.translation.z = msg["goal_pose"]["transform"]["translation"]["z"].as<double>();

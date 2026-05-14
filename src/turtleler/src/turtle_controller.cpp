@@ -154,17 +154,12 @@ private:
             if (std::abs(remainingAngle) > 0.05)
             {
                 // Not aligned, rotate
-                command.angular.z = steeringController_->compute_command(-remainingAngle, dt);
+                command.angular.z = steeringController_->compute_command(remainingAngle, dt);
             }
             else
             {
                 // Aligned enough, move forward
                 command.linear.x = speedController_->compute_command(remainingDistance, dt);
-            }
-
-            if (remainingAngle < 0)
-            {
-                command.angular.z *= -1;
             }
 
             sendCommand(command);

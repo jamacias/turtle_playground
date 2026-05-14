@@ -46,15 +46,15 @@ public:
         {
             steeringController_ = std::make_unique<control_toolbox::Pid>();
             control_toolbox::AntiWindupStrategy strategy;
-            strategy.type = control_toolbox::AntiWindupStrategy::NONE;
-            steeringController_->initialize(2.0, 1.0, 0.0, 1.0, 0.1, strategy);
+            strategy.type = control_toolbox::AntiWindupStrategy::BACK_CALCULATION;
+            steeringController_->initialize(0.8, 0.2, 0.0, 3.0, -3.0, strategy);
         }
 
         {
             speedController_ = std::make_unique<control_toolbox::Pid>();
             control_toolbox::AntiWindupStrategy strategy;
             strategy.type = control_toolbox::AntiWindupStrategy::BACK_CALCULATION;
-            speedController_->initialize(0.3, 0.1, 0.0, 2.0, 0.05, strategy);
+            speedController_->initialize(1.0, 0.1, 0.0, 2.0, 0.05, strategy);
         }
     }
 
@@ -113,7 +113,7 @@ private:
         rclcpp::Time lastTime          = get_clock()->now();
         while (rclcpp::ok())
         {
-            if (remainingDistance < 0.1 && std::abs(remainingAngle) < 0.05)
+            if (remainingDistance < 0.05 && std::abs(remainingAngle) < 0.05)
             {
                 RCLCPP_INFO(get_logger(),
                             "Arrived to target (angle error: %.3f [rad] / %.3f [deg]; distance error: %.3f [m])",
@@ -128,12 +128,14 @@ private:
             remainingDistance = calculateDistance(worldTgoal.getOrigin(), worldTturtle.getOrigin());
             goalInTurtle      = worldTturtle.inverse() * worldTgoal.getOrigin();
 
-            if (remainingDistance > 0.1)
+            if (remainingDistance > 0.05)
             {
+                // Far away from target, head to that point
                 remainingAngle = std::atan2(goalInTurtle.y(), goalInTurtle.x());
             }
             else
             {
+                // Already at position, orientate to the right orientation
                 const auto& vector1 = worldTturtle.getBasis().getColumn(0);
                 const auto& vector2 = worldTgoal.getBasis().getColumn(0);
                 remainingAngle      = std::atan2(vector2.y(), vector2.x()) - std::atan2(vector1.y(), vector1.x());
@@ -147,23 +149,17 @@ private:
                 }
             }
 
-            RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 10,
-                                 "remainingAngle: %.3f [rad] (%.3f deg) (distance: %.2f)", remainingAngle,
-                                 remainingAngle * 180.0f / M_PI, remainingDistance);
-
             rclcpp::Time time = get_clock()->now();
             const auto   dt   = get_clock()->now() - lastTime;
             if (std::abs(remainingAngle) > 0.05)
             {
                 // Not aligned, rotate
-                command.angular.z = 0.6;
-                // command.angular.z = steeringController_->compute_command(remainingAngle, dt);
+                command.angular.z = steeringController_->compute_command(-remainingAngle, dt);
             }
             else
             {
                 // Aligned enough, move forward
-                command.linear.x = 0.6;
-                // command.linear.x = speedController_->compute_command(remainingDistance, dt);
+                command.linear.x = speedController_->compute_command(remainingDistance, dt);
             }
 
             if (remainingAngle < 0)
@@ -221,8 +217,8 @@ private:
 
     void sendCommand(const geometry_msgs::msg::Twist& command) const
     {
-        // RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 1000, "Publishing: %s - Throttled log",
-        //                      geometry_msgs::msg::to_yaml(command, true).c_str());
+        RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 1000, "Publishing: %s - Throttled log",
+                             geometry_msgs::msg::to_yaml(command, true).c_str());
         cmdPublisher_->publish(command);
     }
 };

@@ -3,14 +3,18 @@
       main_tree_to_execute="Patrol">
   <BehaviorTree ID="Patrol">
     <Sequence>
-      <Script                code="target_pose:='{goal_pose: {header: {stamp: {sec: 0, nanosec: 0}, frame_id: world}, child_frame_id: goal, transform: {translation: {x: 8.97945, y: 9.87201, z: 0.00000}, rotation: {x: 0.00000, y: 0.00000, z: 0.408508, w: 0.912755}}}}'" />
-      <GoToPoseAction action_name="navigation_goal" target_pose="{target_pose}"/>
-      <Script                code="target_pose:='{goal_pose: {header: {stamp: {sec: 0, nanosec: 0}, frame_id: world}, child_frame_id: goal, transform: {translation: {x: 1.06571, y: 9.94391, z: 0.00000}, rotation: {x: 0.00000, y: 0.00000, z: 0.930151, w: 0.367177}}}}'" />
-      <GoToPoseAction action_name="navigation_goal" target_pose="{target_pose}"/>
-      <Script                code="target_pose:='{goal_pose: {header: {stamp: {sec: 0, nanosec: 0}, frame_id: world}, child_frame_id: goal, transform: {translation: {x: 0.818013, y: 0.802696, z: 0.00000}, rotation: {x: 0.00000, y: 0.00000, z: -0.920730, w: 0.390200}}}}'" />
-      <GoToPoseAction action_name="navigation_goal" target_pose="{target_pose}"/>
-      <Script                code="target_pose:='{goal_pose: {header: {stamp: {sec: 0, nanosec: 0}, frame_id: world}, child_frame_id: goal, transform: {translation: {x: 8.77100, y: 0.575830, z: 0.00000}, rotation: {x: 0.00000, y: 0.00000, z: -0.287293, w: 0.957843}}}}'" />
-      <GoToPoseAction action_name="navigation_goal" target_pose="{target_pose}"/>
+      <Script code="target_pose:=&apos;{goal_pose: {header: {stamp: {sec: 0, nanosec: 0}, frame_id: world}, child_frame_id: goal, transform: {translation: {x: 8.97945, y: 9.87201, z: 0.00000}, rotation: {x: 0.00000, y: 0.00000, z: 0.408508, w: 0.912755}}}}&apos;"/>
+      <GoToPoseAction action_name="navigation_goal"
+                      target_pose="{target_pose}"/>
+      <Script code="target_pose:=&apos;{goal_pose: {header: {stamp: {sec: 0, nanosec: 0}, frame_id: world}, child_frame_id: goal, transform: {translation: {x: 1.06571, y: 9.94391, z: 0.00000}, rotation: {x: 0.00000, y: 0.00000, z: 0.930151, w: 0.367177}}}}&apos;"/>
+      <GoToPoseAction action_name="navigation_goal"
+                      target_pose="{target_pose}"/>
+      <Script code="target_pose:=&apos;{goal_pose: {header: {stamp: {sec: 0, nanosec: 0}, frame_id: world}, child_frame_id: goal, transform: {translation: {x: 0.818013, y: 0.802696, z: 0.00000}, rotation: {x: 0.00000, y: 0.00000, z: -0.920730, w: 0.390200}}}}&apos;"/>
+      <GoToPoseAction action_name="navigation_goal"
+                      target_pose="{target_pose}"/>
+      <Script code="target_pose:=&apos;{goal_pose: {header: {stamp: {sec: 0, nanosec: 0}, frame_id: world}, child_frame_id: goal, transform: {translation: {x: 8.77100, y: 0.575830, z: 0.00000}, rotation: {x: 0.00000, y: 0.00000, z: -0.287293, w: 0.957843}}}}&apos;"/>
+      <GoToPoseAction action_name="navigation_goal"
+                      target_pose="{target_pose}"/>
     </Sequence>
   </BehaviorTree>
 </root>

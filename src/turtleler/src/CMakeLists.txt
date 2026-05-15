@@ -38,6 +38,7 @@ target_link_libraries(turtle_brain PRIVATE
   ${btcpp_ros2_interfaces_TARGETS}
 )
 
+### BT Executor
 add_executable(bt_executor bt_executor.cpp)
 target_link_libraries(bt_executor PRIVATE
   rclcpp::rclcpp
@@ -46,6 +47,7 @@ target_link_libraries(bt_executor PRIVATE
   ${btcpp_ros2_interfaces_TARGETS}
 )
 
+### BT Plugins
 add_library(go_to_pose_plugin SHARED actions/go_to_pose_action.cpp)
 target_compile_definitions(go_to_pose_plugin PRIVATE BT_PLUGIN_EXPORT)
 target_link_libraries(go_to_pose_plugin 
@@ -59,6 +61,18 @@ target_link_libraries(go_to_pose_plugin
   yaml-cpp::yaml-cpp
 )
 
+add_library(get_pose_plugin SHARED actions/get_pose_action.cpp)
+target_compile_definitions(get_pose_plugin PRIVATE BT_PLUGIN_EXPORT)
+target_link_libraries(get_pose_plugin 
+  ${geometry_msgs_TARGET}
+  rclcpp::rclcpp
+  ${turtlesim_msgs_TARGETS}
+  ${turtleler_msgs_TARGETS}
+  behaviortree_cpp::behaviortree_cpp
+  behaviortree_ros2::behaviortree_ros2
+  ${btcpp_ros2_interfaces_TARGETS}
+)
+
 install(TARGETS
     turtle_tf2_broadcaster
     turtle_controller
@@ -66,10 +80,12 @@ install(TARGETS
     turtle_brain
     bt_executor
     go_to_pose_plugin
+    get_pose_plugin
     DESTINATION lib/${PROJECT_NAME})
 
 install(TARGETS
   go_to_pose_plugin
+  get_pose_plugin
   LIBRARY DESTINATION share/${PROJECT_NAME}/bt_plugins
   ARCHIVE DESTINATION share/${PROJECT_NAME}/bt_plugins
   RUNTIME DESTINATION share/${PROJECT_NAME}/bt_plugins

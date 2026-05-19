@@ -1,6 +1,9 @@
 #include "go_to_pose_action.hpp"
+#include "utils.h"
 
 #include "behaviortree_ros2/plugins.hpp"
+
+using namespace turtleler;
 
 bool GoToPoseAction::setGoal(RosActionNode::Goal& goal)
 {
@@ -27,12 +30,7 @@ NodeStatus GoToPoseAction::onFailure(ActionNodeErrorCode error)
 
 NodeStatus GoToPoseAction::onFeedback(const std::shared_ptr<const Feedback> feedback)
 {
-    rclcpp::Clock clock(RCL_ROS_TIME);
-    if (auto node = node_.lock())
-    {
-        clock = *node->get_clock();
-    }
-    RCLCPP_INFO_THROTTLE(logger(), clock, 1000, "%s -- Remaining distance: %.3f [m] (%.2f)%%", __func__,
+    RCLCPP_INFO_THROTTLE(logger(), *getClock(node_), 1000, "%s -- Remaining distance: %.3f [m] (%.2f)%%", __func__,
                          feedback->remaining_distance, feedback->progress * 100.0f);
 
     return NodeStatus::RUNNING;

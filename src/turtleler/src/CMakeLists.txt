@@ -48,7 +48,7 @@ target_link_libraries(bt_executor PRIVATE
 )
 
 ### BT Plugins
-add_library(go_to_pose_plugin SHARED actions/go_to_pose_action.cpp)
+add_library(go_to_pose_plugin SHARED actions/go_to_pose_action.cpp actions/utils.cpp)
 target_compile_definitions(go_to_pose_plugin PRIVATE BT_PLUGIN_EXPORT)
 target_link_libraries(go_to_pose_plugin 
   ${geometry_msgs_TARGET}
@@ -66,6 +66,8 @@ target_compile_definitions(get_pose_plugin PRIVATE BT_PLUGIN_EXPORT)
 target_link_libraries(get_pose_plugin 
   ${geometry_msgs_TARGET}
   rclcpp::rclcpp
+  tf2::tf2
+  tf2_ros::tf2_ros
   ${turtlesim_msgs_TARGETS}
   ${turtleler_msgs_TARGETS}
   behaviortree_cpp::behaviortree_cpp

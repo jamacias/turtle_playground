@@ -1,17 +1,28 @@
 #include "get_pose_action.hpp"
 
 #include "behaviortree_ros2/plugins.hpp"
-#include "geometry_msgs/msg/transform_stamped.hpp"
+#include <algorithm>
 #include <behaviortree_cpp/basic_types.h>
+#include <rclcpp/logging.hpp>
 
-NodeStatus GetPoseAction::onTick(const std::shared_ptr<Pose>& lastMsg)
+NodeStatus GetPoseAction::onTick(const std::shared_ptr<TFMessage>& lastMsg)
 {
-    RCLCPP_INFO(logger(), "%s", __func__);
+    RCLCPP_DEBUG(logger(), "%s", __func__);
 
     if (!lastMsg)
         return NodeStatus::FAILURE;
 
-    RCLCPP_INFO(logger(), "%s -- %s", __func__, geometry_msgs::msg::to_yaml(*lastMsg, true).c_str());
+    const auto tf = std::find_if(lastMsg->transforms.cbegin(), lastMsg->transforms.cend(), [](const geometry_msgs::msg::TransformStamped& tf)
+    {
+        return tf.child_frame_id == "turtle1" && tf.header.frame_id == "world";
+    });
+
+    if (tf == lastMsg->transforms.cend())
+        return NodeStatus::FAILURE;
+
+    RCLCPP_INFO(logger(), "%s -- %s", __func__, geometry_msgs::msg::to_yaml(*tf, true).c_str());
+
+    setOutput<Pose>("current_pose", *tf);
 
     return NodeStatus::SUCCESS;
 }

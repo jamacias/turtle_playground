@@ -3,10 +3,19 @@
       main_tree_to_execute="Dance">
   <BehaviorTree ID="Dance">
     <Sequence>
-      <GetPoseAction topic_name="/tf"/>
-      <Script code="target_pose:=&apos;{goal_pose: {header: {stamp: {sec: 0, nanosec: 0}, frame_id: world}, child_frame_id: goal, transform: {translation: {x: 8.97945, y: 9.87201, z: 0.00000}, rotation: {x: 0.00000, y: 0.00000, z: 0.408508, w: 0.912755}}}}&apos;"/>
-      <GoToPoseAction action_name="navigation_goal"
-                      target_pose="{target_pose}"/>
+      <RetryUntilSuccessful num_attempts="10">
+        <GetPoseAction topic_name="tf" current_pose="{=}"/>
+      </RetryUntilSuccessful>
     </Sequence>
   </BehaviorTree>
+
+  <!-- Description of Node Models (used by Groot) -->
+  <TreeNodesModel>
+    <Action ID="GetPoseAction"
+            editable="true">
+      <input_port name="topic_name"/>
+      <output_port name="current_pose"/>
+    </Action>
+  </TreeNodesModel>
+
 </root>

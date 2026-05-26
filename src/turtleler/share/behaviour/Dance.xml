@@ -6,6 +6,10 @@
       <RetryUntilSuccessful num_attempts="10">
         <GetPoseAction topic_name="tf" current_pose="{=}"/>
       </RetryUntilSuccessful>
+      <GenerateDanceAction current_pose="{=}" goals="{=}"/>
+      <LoopPose queue="{goals}" value="{pose}">
+        <GoToPoseAction action_name="navigation_goal" target_pose="{pose}"/>
+      </LoopPose>
     </Sequence>
   </BehaviorTree>
 

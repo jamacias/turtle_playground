@@ -75,6 +75,20 @@ target_link_libraries(get_pose_plugin
   ${btcpp_ros2_interfaces_TARGETS}
 )
 
+add_library(generate_dance_plugin SHARED actions/generate_dance_action.cpp)
+target_compile_definitions(generate_dance_plugin PRIVATE BT_PLUGIN_EXPORT)
+target_link_libraries(generate_dance_plugin 
+  ${geometry_msgs_TARGET}
+  rclcpp::rclcpp
+  tf2::tf2
+  tf2_ros::tf2_ros
+  ${tf2_geometry_msgs_TARGETS}
+  ${turtlesim_msgs_TARGETS}
+  ${turtleler_msgs_TARGETS}
+  behaviortree_cpp::behaviortree_cpp
+  ${nav_msgs_TARGETS}
+)
+
 install(TARGETS
     turtle_tf2_broadcaster
     turtle_controller
@@ -83,11 +97,13 @@ install(TARGETS
     bt_executor
     go_to_pose_plugin
     get_pose_plugin
+    generate_dance_plugin
     DESTINATION lib/${PROJECT_NAME})
 
 install(TARGETS
   go_to_pose_plugin
   get_pose_plugin
+  generate_dance_plugin
   LIBRARY DESTINATION share/${PROJECT_NAME}/bt_plugins
   ARCHIVE DESTINATION share/${PROJECT_NAME}/bt_plugins
   RUNTIME DESTINATION share/${PROJECT_NAME}/bt_plugins

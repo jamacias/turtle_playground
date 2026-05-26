@@ -1,9 +1,19 @@
 #include "go_to_pose_action.hpp"
-#include "utils.h"
 
 #include "behaviortree_ros2/plugins.hpp"
+#include "utils.h"
 
 using namespace turtleler;
+
+GoToPoseAction::GoToPoseAction(const std::string& name, const NodeConfig& conf, const RosNodeParams& params)
+: RosActionNode<NavigationGoal>(name, conf, params)
+{
+}
+
+PortsList GoToPoseAction::providedPorts()
+{
+    return providedBasicPorts({InputPort<std::string>("target_pose", "", "The target pose to which to navigate.")});
+}
 
 bool GoToPoseAction::setGoal(RosActionNode::Goal& goal)
 {
@@ -19,7 +29,8 @@ bool GoToPoseAction::setGoal(RosActionNode::Goal& goal)
 
     goal = convertFromString<RosActionNode::Goal>(target_pose);
 
-    RCLCPP_INFO(logger(), "%s -- Received request: '%s'", __func__, turtleler_msgs::action::to_yaml(goal, true).c_str());
+    RCLCPP_INFO(logger(), "%s -- Received request: '%s'", __func__,
+                turtleler_msgs::action::to_yaml(goal, true).c_str());
 
     return true;
 }

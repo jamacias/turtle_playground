@@ -1,13 +1,36 @@
 #include "go_to_pose_action.hpp"
 
 #include "behaviortree_ros2/plugins.hpp"
+#include "utils.h"
+
+using namespace turtleler;
+
+GoToPoseAction::GoToPoseAction(const std::string& name, const NodeConfig& conf, const RosNodeParams& params)
+: RosActionNode<NavigationGoal>(name, conf, params)
+{
+}
+
+PortsList GoToPoseAction::providedPorts()
+{
+    return providedBasicPorts({InputPort<std::string>("target_pose", "", "The target pose to which to navigate.")});
+}
 
 bool GoToPoseAction::setGoal(RosActionNode::Goal& goal)
 {
-    const auto target_pose = getInput<std::string>("target_pose").value();
+    RCLCPP_DEBUG(logger(), "%s", __func__);
+
+    // TODO: is there a way to generalize this and not require only strings?
+    std::string target_pose;
+    if (!getInput<std::string>("target_pose", target_pose))
+    {
+        RCLCPP_ERROR(logger(), "%s -- Could not get 'target_pose'", __func__);
+        return false;
+    }
+
     goal = convertFromString<RosActionNode::Goal>(target_pose);
 
-    RCLCPP_INFO(logger(), "%s -- Received request: '%s'", __func__, turtleler_msgs::action::to_yaml(goal, true).c_str());
+    RCLCPP_INFO(logger(), "%s -- Received request: '%s'", __func__,
+                turtleler_msgs::action::to_yaml(goal, true).c_str());
 
     return true;
 }
@@ -27,12 +50,7 @@ NodeStatus GoToPoseAction::onFailure(ActionNodeErrorCode error)
 
 NodeStatus GoToPoseAction::onFeedback(const std::shared_ptr<const Feedback> feedback)
 {
-    rclcpp::Clock clock(RCL_ROS_TIME);
-    if (auto node = node_.lock())
-    {
-        clock = *node->get_clock();
-    }
-    RCLCPP_INFO_THROTTLE(logger(), clock, 1000, "%s -- Remaining distance: %.3f [m] (%.2f)%%", __func__,
+    RCLCPP_INFO_THROTTLE(logger(), *getClock(node_), 1000, "%s -- Remaining distance: %.3f [m] (%.2f)%%", __func__,
                          feedback->remaining_distance, feedback->progress * 100.0f);
 
     return NodeStatus::RUNNING;

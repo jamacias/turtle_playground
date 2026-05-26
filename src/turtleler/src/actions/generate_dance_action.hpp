@@ -17,16 +17,9 @@ using namespace BT;
 class GenerateDanceAction : public SyncActionNode
 {
 public:
-    GenerateDanceAction(const std::string& name, const NodeConfig& conf)
-    : SyncActionNode(name, conf)
-    {
-    }
+    GenerateDanceAction(const std::string& name, const NodeConfig& conf);
 
-    static PortsList providedPorts()
-    {
-        return {InputPort<Pose>("current_pose", "The current pose."),
-                OutputPort<Goals>("goals", "The goals to which to navigate.")};
-    }
+    static PortsList providedPorts();
 
     virtual NodeStatus tick() override;
 };

@@ -8,13 +8,15 @@ def generate_launch_description():
         Node(
             package='turtlesim',
             executable='turtlesim_node',
-            name='sim'
+            name='sim',
+            output='screen'
         ),
         Node(
             package='rviz2',
             executable='rviz2',
             name='rviz2',
-            arguments=["-d", f"{get_package_share_directory('turtleler')}/share/rviz_turtleler_viewer.rviz"]
+            arguments=["-d", f"{get_package_share_directory('turtleler')}/share/rviz_turtleler_viewer.rviz"],
+            output='screen'
         ),
         Node(
             package='turtleler',
@@ -22,12 +24,14 @@ def generate_launch_description():
             name='broadcaster1',
             parameters=[
                 {'turtlename': 'turtle1'}
-            ]
+            ],
+            output='screen'
         ),
         Node(
             package='turtleler',
             executable='turtle_brain',
             name='turtle_brain',
+            output='screen'
         ),
         # Node(
         #     package='turtleler',
@@ -40,7 +44,8 @@ def generate_launch_description():
             name='controller1',
             parameters=[
                 {'turtlename': 'turtle1'}
-            ]
+            ],
+            output='screen'
         ),
         Node(
             package='turtleler',
@@ -49,6 +54,7 @@ def generate_launch_description():
             parameters=[
                 {'behavior_trees': ['turtleler/share/behaviour']},
                 {'plugins': ['turtleler/bt_plugins']}
-            ]
+            ],
+            output='screen'
         ),
     ])

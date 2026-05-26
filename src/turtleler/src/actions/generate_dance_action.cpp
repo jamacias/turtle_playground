@@ -33,19 +33,20 @@ NodeStatus GenerateDanceAction::tick()
     pose.header.stamp = rclcpp::Clock(RCL_SYSTEM_TIME).now();
     pose.child_frame_id = currentPose.child_frame_id;
     pose.transform = currentPose.transform;
-    tf2::convert(tf2::Quaternion(tf2::Vector3(0, 0, 1), M_PI / 2.0), pose.transform.rotation);
+    tf2::Quaternion originalRotationQuat;
+    tf2::convert(pose.transform.rotation, originalRotationQuat);
+
+    tf2::convert((tf2::Quaternion(tf2::Vector3(0, 0, 1), M_PI / 4.0) * originalRotationQuat).normalized(),
+                 pose.transform.rotation);
     goals.emplace_back(turtleler_msgs::action::to_yaml(goal, true));
 
-    tf2::convert(tf2::Quaternion(tf2::Vector3(0, 0, 1), -M_PI / 2.0), pose.transform.rotation);
+    tf2::convert((tf2::Quaternion(tf2::Vector3(0, 0, 1), -M_PI / 4.0) * originalRotationQuat).normalized(),
+                 pose.transform.rotation);
     goals.emplace_back(turtleler_msgs::action::to_yaml(goal, true));
 
     pose.transform = currentPose.transform;
     goals.emplace_back(turtleler_msgs::action::to_yaml(goal, true));
 
-    for (size_t i = 0; i < goals.size(); ++i)
-    {
-        RCLCPP_INFO(logger, "%s -- Computed goal[%lu]: %s", __func__, i, goals.at(i).c_str());
-    }
     setOutput<Goals>("goals", goals);
 
     return NodeStatus::SUCCESS;

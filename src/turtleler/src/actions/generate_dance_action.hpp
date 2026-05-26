@@ -4,7 +4,6 @@
 #include <behaviortree_cpp/action_node.h>
 #include <behaviortree_cpp/behavior_tree.h>
 #include <geometry_msgs/msg/transform_stamped.hpp>
-
 #include <rclcpp/logger.hpp>
 #include <rclcpp/logging.hpp>
 
@@ -23,4 +22,3 @@ public:
 
     virtual NodeStatus tick() override;
 };
-

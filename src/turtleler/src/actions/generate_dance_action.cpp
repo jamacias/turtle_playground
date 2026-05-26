@@ -1,4 +1,5 @@
 #include "generate_dance_action.hpp"
+
 #include "geometry_msgs/msg/transform_stamped.hpp"
 
 #include <behaviortree_cpp/actions/set_blackboard_node.h>
@@ -33,16 +34,16 @@ NodeStatus GenerateDanceAction::tick()
     Pose currentPose;
     if (!getInput("current_pose", currentPose))
         return NodeStatus::FAILURE;
-    
+
     RCLCPP_INFO(logger, "%s -- %s", __func__, geometry_msgs::msg::to_yaml(currentPose, true).c_str());
 
-    Goals goals;
+    Goals                                        goals;
     turtleler_msgs::action::NavigationGoal::Goal goal;
-    auto& pose = goal.goal_pose;
-    pose.header.frame_id = "world";
-    pose.header.stamp = rclcpp::Clock(RCL_SYSTEM_TIME).now();
-    pose.child_frame_id = currentPose.child_frame_id;
-    pose.transform = currentPose.transform;
+    auto&                                        pose = goal.goal_pose;
+    pose.header.frame_id                              = "world";
+    pose.header.stamp                                 = rclcpp::Clock(RCL_SYSTEM_TIME).now();
+    pose.child_frame_id                               = currentPose.child_frame_id;
+    pose.transform                                    = currentPose.transform;
     tf2::Quaternion originalRotationQuat;
     tf2::convert(pose.transform.rotation, originalRotationQuat);
 

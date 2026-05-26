@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <root BTCPP_format="4" project_name="Project">
+    <include path="Dance.xml"/>
     <include path="GoToPose.xml"/>
     <!-- Description of Node Models (used by Groot) -->
     <TreeNodesModel>
+        <Action ID="GetPoseAction" editable="true">
+            <input_port name="topic_name"/>
+        </Action>
         <Action ID="GoToPoseAction" editable="true">
             <input_port name="action_name">The name of the action server it links to</input_port>
             <input_port name="target_pose">The pose that has to be reached.</input_port>

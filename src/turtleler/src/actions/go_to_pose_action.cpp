@@ -7,7 +7,16 @@ using namespace turtleler;
 
 bool GoToPoseAction::setGoal(RosActionNode::Goal& goal)
 {
-    const auto target_pose = getInput<std::string>("target_pose").value();
+    RCLCPP_DEBUG(logger(), "%s", __func__);
+
+    // TODO: is there a way to generalize this and not require only strings?
+    std::string target_pose;
+    if (!getInput<std::string>("target_pose", target_pose))
+    {
+        RCLCPP_ERROR(logger(), "%s -- Could not get 'target_pose'", __func__);
+        return false;
+    }
+
     goal = convertFromString<RosActionNode::Goal>(target_pose);
 
     RCLCPP_INFO(logger(), "%s -- Received request: '%s'", __func__, turtleler_msgs::action::to_yaml(goal, true).c_str());

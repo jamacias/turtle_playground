@@ -113,15 +113,6 @@ private:
         rclcpp::Time lastTime          = get_clock()->now();
         while (rclcpp::ok())
         {
-            if (remainingDistance < 0.05 && std::abs(remainingAngle) < 0.05)
-            {
-                RCLCPP_INFO(get_logger(),
-                            "Arrived to target (angle error: %.3f [rad] / %.3f [deg]; distance error: %.3f [m])",
-                            remainingAngle, remainingAngle * 180.0f / M_PI, remainingDistance);
-                break;
-            }
-
-            geometry_msgs::msg::Twist command;
             // TODO: cancel action
 
             worldTturtle      = getPose("world", turtlename_);
@@ -149,6 +140,15 @@ private:
                 }
             }
 
+            if (remainingDistance < 0.05 && std::abs(remainingAngle) < 0.05)
+            {
+                RCLCPP_INFO(get_logger(),
+                            "Arrived to target (angle error: %.3f [rad] / %.3f [deg]; distance error: %.3f [m])",
+                            remainingAngle, remainingAngle * 180.0f / M_PI, remainingDistance);
+                break;
+            }
+
+            geometry_msgs::msg::Twist command;
             rclcpp::Time time = get_clock()->now();
             const auto   dt   = get_clock()->now() - lastTime;
             if (std::abs(remainingAngle) > 0.05)

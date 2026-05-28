@@ -63,8 +63,8 @@ private:
 
         tfPublisher_->sendTransform(goalTF);
 
-        NavigationGoal::Goal goal;
-        goal.goal_pose = goalTF;
+        GoToPoseAction::NavigationGoal::Goal goal;
+        goal.goal_pose     = goalTF;
         const auto payload = turtleler_msgs::action::to_yaml(goal, true);
         RCLCPP_INFO(get_logger(), "%s -- Payload: %s", __func__, payload.c_str());
 

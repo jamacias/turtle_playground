@@ -24,5 +24,5 @@ BT_REGISTER_ROS_NODES(factory, params)
 
     // Pure BT nodes
     factory.registerNodeType<GenerateDanceAction>("GenerateDanceAction");
-    factory.registerNodeType<LoopNode<Goals::value_type>>("LoopPose");
+    factory.registerNodeType<LoopNode<GenerateDanceAction::Goal>>("LoopPose");
 }

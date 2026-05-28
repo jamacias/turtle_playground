@@ -1,7 +1,5 @@
 #include "generate_dance_action.hpp"
 
-#include "geometry_msgs/msg/transform_stamped.hpp"
-
 #include "turtleler_msgs/action/navigation_goal.hpp"
 
 #include <behaviortree_cpp/actions/set_blackboard_node.h>
@@ -35,7 +33,7 @@ NodeStatus GenerateDanceAction::tick()
     if (!getInput("current_pose", currentPose))
         return NodeStatus::FAILURE;
 
-    RCLCPP_INFO(logger, "%s -- %s", __func__, geometry_msgs::msg::to_yaml(currentPose, true).c_str());
+    RCLCPP_INFO(logger, "%s -- Current pose: %s", __func__, geometry_msgs::msg::to_yaml(currentPose, true).c_str());
 
     Goals                                        goals;
     turtleler_msgs::action::NavigationGoal::Goal goal;

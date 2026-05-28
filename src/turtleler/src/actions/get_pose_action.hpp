@@ -6,14 +6,13 @@
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <tf2_msgs/msg/tf_message.hpp>
 
-using TFMessage = tf2_msgs::msg::TFMessage;
-using Pose      = geometry_msgs::msg::TransformStamped;
-
 using namespace BT;
 
-class GetPoseAction : public RosTopicSubNode<TFMessage>
+class GetPoseAction : public RosTopicSubNode<tf2_msgs::msg::TFMessage>
 {
 public:
+    using TFMessage = tf2_msgs::msg::TFMessage;
+    using Pose      = geometry_msgs::msg::TransformStamped;
     GetPoseAction(const std::string& name, const NodeConfig& conf, const RosNodeParams& params);
 
     static PortsList providedPorts();

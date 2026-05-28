@@ -6,12 +6,13 @@
 #include <behaviortree_cpp/behavior_tree.h>
 #include <behaviortree_ros2/bt_action_node.hpp>
 
-using NavigationGoal = turtleler_msgs::action::NavigationGoal;
 using namespace BT;
 
-class GoToPoseAction : public RosActionNode<NavigationGoal>
+class GoToPoseAction : public RosActionNode<turtleler_msgs::action::NavigationGoal>
 {
 public:
+    using NavigationGoal = turtleler_msgs::action::NavigationGoal;
+
     GoToPoseAction(const std::string& name, const NodeConfig& conf, const RosNodeParams& params);
 
     static PortsList providedPorts();

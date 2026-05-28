@@ -11,24 +11,20 @@ GoToPoseAction::GoToPoseAction(const std::string& name, const NodeConfig& conf, 
 
 PortsList GoToPoseAction::providedPorts()
 {
-    return providedBasicPorts({InputPort<std::string>("target_pose", "", "The target pose to which to navigate.")});
+    return providedBasicPorts({InputPort<RosActionNode::Goal>("target_pose", "", "The target pose to which to navigate.")});
 }
 
 bool GoToPoseAction::setGoal(RosActionNode::Goal& goal)
 {
     RCLCPP_DEBUG(logger(), "%s", __func__);
 
-    // TODO: is there a way to generalize this and not require only strings?
-    std::string target_pose;
-    if (!getInput<std::string>("target_pose", target_pose))
+    if (!getInput<RosActionNode::Goal>("target_pose", goal))
     {
         RCLCPP_ERROR(logger(), "%s -- Could not get 'target_pose'", __func__);
         return false;
     }
 
-    goal = convertFromString<RosActionNode::Goal>(target_pose);
-
-    RCLCPP_INFO(logger(), "%s -- Received request: '%s'", __func__,
+    RCLCPP_INFO(logger(), "%s -- Goal set to '%s'", __func__,
                 turtleler_msgs::action::to_yaml(goal, true).c_str());
 
     return true;

@@ -1,7 +1,5 @@
 #include "get_pose_action.hpp"
 
-#include "behaviortree_ros2/plugins.hpp"
-
 #include <algorithm>
 #include <behaviortree_cpp/basic_types.h>
 #include <rclcpp/logging.hpp>
@@ -36,5 +34,3 @@ NodeStatus GetPoseAction::onTick(const std::shared_ptr<TFMessage>& lastMsg)
 
     return NodeStatus::SUCCESS;
 }
-
-CreateRosNodePlugin(GetPoseAction, "GetPoseAction");

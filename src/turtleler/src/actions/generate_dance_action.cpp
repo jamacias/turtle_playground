@@ -2,10 +2,10 @@
 
 #include "geometry_msgs/msg/transform_stamped.hpp"
 
+#include "turtleler_msgs/action/navigation_goal.hpp"
+
 #include <behaviortree_cpp/actions/set_blackboard_node.h>
 #include <behaviortree_cpp/basic_types.h>
-#include <behaviortree_cpp/bt_factory.h>
-#include <behaviortree_cpp/decorators/loop_node.h>
 #include <rcl/time.h>
 #include <rclcpp/clock.hpp>
 #include <rclcpp/logger.hpp>
@@ -61,12 +61,4 @@ NodeStatus GenerateDanceAction::tick()
     setOutput<Goals>("goals", goals);
 
     return NodeStatus::SUCCESS;
-}
-
-BT_REGISTER_NODES(factory)
-{
-    factory.registerNodeType<GenerateDanceAction>("GenerateDanceAction");
-
-    // TODO: move to its own plugin
-    factory.registerNodeType<LoopNode<Goals::value_type>>("LoopPose");
 }

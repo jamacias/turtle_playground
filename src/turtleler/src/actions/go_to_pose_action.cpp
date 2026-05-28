@@ -1,6 +1,5 @@
+#include "bt_conversions.hpp"
 #include "go_to_pose_action.hpp"
-
-#include "behaviortree_ros2/plugins.hpp"
 #include "utils.h"
 
 using namespace turtleler;
@@ -55,5 +54,3 @@ NodeStatus GoToPoseAction::onFeedback(const std::shared_ptr<const Feedback> feed
 
     return NodeStatus::RUNNING;
 }
-
-CreateRosNodePlugin(GoToPoseAction, "GoToPoseAction");

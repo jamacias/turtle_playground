@@ -1,4 +1,6 @@
-#include "bt_conversions.hpp"
+#ifndef TURTLELER_ACTIONS_GENERATEDANCEACTION_H
+#define TURTLELER_ACTIONS_GENERATEDANCEACTION_H
+
 #include "geometry_msgs/msg/transform_stamped.hpp"
 
 #include <behaviortree_cpp/action_node.h>
@@ -22,3 +24,5 @@ public:
 
     virtual NodeStatus tick() override;
 };
+
+#endif // TURTLELER_ACTIONS_GENERATEDANCEACTION_H

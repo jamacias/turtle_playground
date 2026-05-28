@@ -1,3 +1,6 @@
+#ifndef TURTLELER_ACTIONS_BTCONVERSIONS_H
+#define TURTLELER_ACTIONS_BTCONVERSIONS_H
+
 #include "turtleler_msgs/action/navigation_goal.hpp"
 #include "yaml-cpp/yaml.h"
 
@@ -33,3 +36,5 @@ inline NavigationGoal::Goal convertFromString(StringView str)
     return output;
 }
 } // namespace BT
+
+#endif // TURTLELER_ACTIONS_BTCONVERSIONS_H

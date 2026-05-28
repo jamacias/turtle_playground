@@ -1,4 +1,5 @@
-#include "bt_conversions.hpp"
+#ifndef TURTLELER_ACTIONS_GETPOSEACTION_H
+#define TURTLELER_ACTIONS_GETPOSEACTION_H
 
 #include <behaviortree_cpp/behavior_tree.h>
 #include <behaviortree_ros2/bt_topic_sub_node.hpp>
@@ -19,3 +20,5 @@ public:
 
     virtual NodeStatus onTick(const std::shared_ptr<TFMessage>& lastMsg) override;
 };
+
+#endif // TURTLELER_ACTIONS_GETPOSEACTION_H

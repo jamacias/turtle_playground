@@ -1,4 +1,6 @@
-#include "bt_conversions.hpp"
+#ifndef TURTLELER_ACTIONS_GOTOPOSEACTION_H
+#define TURTLELER_ACTIONS_GOTOPOSEACTION_H
+
 #include "turtleler_msgs/action/navigation_goal.hpp"
 
 #include <behaviortree_cpp/behavior_tree.h>
@@ -22,3 +24,5 @@ public:
 
     NodeStatus onFeedback(const std::shared_ptr<const Feedback> feedback) override;
 };
+
+#endif // TURTLELER_ACTIONS_GOTOPOSEACTION_H

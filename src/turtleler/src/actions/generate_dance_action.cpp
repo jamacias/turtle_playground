@@ -47,14 +47,14 @@ NodeStatus GenerateDanceAction::tick()
 
     tf2::convert((tf2::Quaternion(tf2::Vector3(0, 0, 1), M_PI / 4.0) * originalRotationQuat).normalized(),
                  pose.transform.rotation);
-    goals.emplace_back(turtleler_msgs::action::to_yaml(goal, true));
+    goals.emplace_back(goal);
 
     tf2::convert((tf2::Quaternion(tf2::Vector3(0, 0, 1), -M_PI / 4.0) * originalRotationQuat).normalized(),
                  pose.transform.rotation);
-    goals.emplace_back(turtleler_msgs::action::to_yaml(goal, true));
+    goals.emplace_back(goal);
 
     pose.transform = currentPose.transform;
-    goals.emplace_back(turtleler_msgs::action::to_yaml(goal, true));
+    goals.emplace_back(goal);
 
     setOutput<Goals>("goals", goals);
 

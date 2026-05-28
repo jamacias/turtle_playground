@@ -24,7 +24,7 @@ bool GoToPoseAction::setGoal(RosActionNode::Goal& goal)
         return false;
     }
 
-    RCLCPP_INFO(logger(), "%s -- Received request: '%s'", __func__,
+    RCLCPP_INFO(logger(), "%s -- Goal set to '%s'", __func__,
                 turtleler_msgs::action::to_yaml(goal, true).c_str());
 
     return true;

@@ -174,7 +174,7 @@ private:
 
             sendCommand(command);
 
-            feedback->progress           = (startingDistance - remainingDistance) / startingDistance;
+            feedback->progress           = startingDistance == 0.0 ? 1.0 : (startingDistance - remainingDistance) / startingDistance;
             feedback->remaining_distance = remainingDistance;
             feedback->remaining_angle    = remainingAngle;
             goalHandle->publish_feedback(feedback);

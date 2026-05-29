@@ -32,7 +32,7 @@ public:
         std::ostringstream stream;
         stream << "/" << turtlename_.c_str() << "/cmd_vel";
         std::string topicName = stream.str();
-        cmdPublisher_         = create_publisher<geometry_msgs::msg::Twist>(topicName, 0);
+        cmdPublisher_         = create_publisher<geometry_msgs::msg::Twist>(topicName, 1);
 
         navigationActionServer_ = rclcpp_action::create_server<NavigationGoal>(
             this, "navigation_goal",

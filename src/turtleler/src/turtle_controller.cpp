@@ -1,25 +1,24 @@
-#include "geometry_msgs/msg/twist.hpp"
-#include "rclcpp/rclcpp.hpp"
-#include "rclcpp_action/rclcpp_action.hpp"
-#include "tf2/exceptions.hpp"
-#include "tf2_ros/buffer.h"
-#include "tf2_ros/transform_listener.h"
 #include "turtleler_msgs/action/navigation_goal.hpp"
 
 #include <cmath>
 #include <control_toolbox/pid.hpp>
 #include <functional>
-#include <limits>
+#include <geometry_msgs/msg/twist.hpp>
 #include <memory>
 #include <rclcpp/logging.hpp>
 #include <rclcpp/rate.hpp>
+#include <rclcpp/rclcpp.hpp>
 #include <rclcpp_action/create_server.hpp>
+#include <rclcpp_action/rclcpp_action.hpp>
 #include <rclcpp_action/server.hpp>
 #include <string>
 #include <tf2/LinearMath/Quaternion.hpp>
 #include <tf2/LinearMath/Vector3.hpp>
+#include <tf2/exceptions.hpp>
 #include <tf2/transform_datatypes.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#include <tf2_ros/buffer.h>
+#include <tf2_ros/transform_listener.h>
 
 using namespace std::chrono_literals;
 class TurtleController : public rclcpp::Node
@@ -33,7 +32,7 @@ public:
         std::ostringstream stream;
         stream << "/" << turtlename_.c_str() << "/cmd_vel";
         std::string topicName = stream.str();
-        cmdPublisher_         = create_publisher<geometry_msgs::msg::Twist>(topicName, 0);
+        cmdPublisher_         = create_publisher<geometry_msgs::msg::Twist>(topicName, 1);
 
         navigationActionServer_ = rclcpp_action::create_server<NavigationGoal>(
             this, "navigation_goal",
@@ -113,8 +112,6 @@ private:
         rclcpp::Time lastTime          = get_clock()->now();
         while (rclcpp::ok())
         {
-            // TODO: cancel action
-
             worldTturtle      = getPose("world", turtlename_);
             remainingDistance = calculateDistance(worldTgoal.getOrigin(), worldTturtle.getOrigin());
             goalInTurtle      = worldTturtle.inverse() * worldTgoal.getOrigin();
@@ -148,9 +145,22 @@ private:
                 break;
             }
 
+            if (goalHandle->is_canceling())
+            {
+                sendCommand(geometry_msgs::msg::Twist());
+
+                auto result                = std::make_shared<NavigationGoal::Result>();
+                result->success            = false;
+                result->remaining_distance = remainingDistance;
+                result->remaining_angle    = remainingAngle;
+                goalHandle->canceled(result);
+                RCLCPP_INFO(get_logger(), "Goal canceled");
+                return;
+            }
+
             geometry_msgs::msg::Twist command;
-            rclcpp::Time time = get_clock()->now();
-            const auto   dt   = get_clock()->now() - lastTime;
+            rclcpp::Time              time = get_clock()->now();
+            const auto                dt   = get_clock()->now() - lastTime;
             if (std::abs(remainingAngle) > 0.05)
             {
                 // Not aligned, rotate
@@ -164,7 +174,8 @@ private:
 
             sendCommand(command);
 
-            feedback->progress           = (startingDistance - remainingDistance) / startingDistance;
+            feedback->progress =
+                startingDistance == 0.0 ? 1.0 : (startingDistance - remainingDistance) / startingDistance;
             feedback->remaining_distance = remainingDistance;
             feedback->remaining_angle    = remainingAngle;
             goalHandle->publish_feedback(feedback);

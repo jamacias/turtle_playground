@@ -1,23 +1,14 @@
-#include "geometry_msgs/msg/pose_stamped.hpp"
-#include "geometry_msgs/msg/transform_stamped.hpp"
-#include "geometry_msgs/msg/vector3.hpp"
-#include "rclcpp/rclcpp.hpp"
-#include "rclcpp_action/rclcpp_action.hpp"
-#include "tf2_ros/transform_broadcaster.h"
 #include "turtleler_msgs/action/navigation_goal.hpp"
-#include "actions/go_to_pose_action.hpp"
 
-#include <filesystem>
+#include <behaviortree_ros2/tree_execution_server.hpp>
 #include <functional>
+#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <geometry_msgs/msg/transform_stamped.hpp>
 #include <memory>
 #include <rclcpp/logging.hpp>
-#include <rclcpp/utilities.hpp>
-
-#include <behaviortree_cpp/behavior_tree.h>
-#include <behaviortree_ros2/bt_action_node.hpp>
-#include <behaviortree_ros2/tree_execution_server.hpp>
-#include <behaviortree_ros2/plugins.hpp>
-
+#include <rclcpp/rclcpp.hpp>
+#include <rclcpp_action/rclcpp_action.hpp>
+#include <tf2_ros/transform_broadcaster.h>
 
 class TurtleBrain : public rclcpp::Node
 {
@@ -33,8 +24,8 @@ public:
     }
 
 private:
-    using ExecuteTree              = btcpp_ros2_interfaces::action::ExecuteTree;
-    using ExecuteTreeGoalHandle    = rclcpp_action::ClientGoalHandle<ExecuteTree>;
+    using ExecuteTree           = btcpp_ros2_interfaces::action::ExecuteTree;
+    using ExecuteTreeGoalHandle = rclcpp_action::ClientGoalHandle<ExecuteTree>;
 
     rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr subscriber_;
     std::unique_ptr<tf2_ros::TransformBroadcaster>                   tfPublisher_;
@@ -46,7 +37,8 @@ private:
         if (!msg)
             return;
 
-        RCLCPP_INFO(get_logger(), "%s -- Received message: %s", __func__, geometry_msgs::msg::to_yaml(*msg, true).c_str());
+        RCLCPP_INFO(get_logger(), "%s -- Received message: %s", __func__,
+                    geometry_msgs::msg::to_yaml(*msg, true).c_str());
 
         geometry_msgs::msg::TransformStamped goalTF;
         goalTF.header                  = msg->header;
@@ -63,7 +55,7 @@ private:
 
         tfPublisher_->sendTransform(goalTF);
 
-        GoToPoseAction::NavigationGoal::Goal goal;
+        turtleler_msgs::action::NavigationGoal::Goal goal;
         goal.goal_pose     = goalTF;
         const auto payload = turtleler_msgs::action::to_yaml(goal, true);
         RCLCPP_INFO(get_logger(), "%s -- Payload: %s", __func__, payload.c_str());
@@ -100,9 +92,7 @@ private:
 
         sendGoalOptions.feedback_callback =
             [this](ExecuteTreeGoalHandle::SharedPtr, const std::shared_ptr<const ExecuteTree::Feedback> feedback)
-        {
-            RCLCPP_INFO(get_logger(), "%s -- Feedback received: %s", __func__, feedback->message.c_str());
-        };
+        { RCLCPP_INFO(get_logger(), "%s -- Feedback received: %s", __func__, feedback->message.c_str()); };
 
         sendGoalOptions.result_callback = [this](const ExecuteTreeGoalHandle::WrappedResult& result)
         {

@@ -29,7 +29,6 @@ private:
 
     rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr subscriber_;
     std::unique_ptr<tf2_ros::TransformBroadcaster>                   tfPublisher_;
-    geometry_msgs::msg::TransformStamped                             currentGoal_{};
     rclcpp_action::Client<ExecuteTree>::SharedPtr                    treeRequester_;
 
     void newGoalCallback(const geometry_msgs::msg::PoseStamped::UniquePtr msg)
@@ -50,8 +49,6 @@ private:
         goalTF.transform.rotation.y    = msg->pose.orientation.y;
         goalTF.transform.rotation.z    = msg->pose.orientation.z;
         goalTF.child_frame_id          = "goal";
-
-        currentGoal_ = goalTF;
 
         tfPublisher_->sendTransform(goalTF);
 

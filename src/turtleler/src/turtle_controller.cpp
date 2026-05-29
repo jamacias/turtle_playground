@@ -112,8 +112,6 @@ private:
         rclcpp::Time lastTime          = get_clock()->now();
         while (rclcpp::ok())
         {
-            // TODO: cancel action
-
             worldTturtle      = getPose("world", turtlename_);
             remainingDistance = calculateDistance(worldTgoal.getOrigin(), worldTturtle.getOrigin());
             goalInTurtle      = worldTturtle.inverse() * worldTgoal.getOrigin();
@@ -145,6 +143,19 @@ private:
                             "Arrived to target (angle error: %.3f [rad] / %.3f [deg]; distance error: %.3f [m])",
                             remainingAngle, remainingAngle * 180.0f / M_PI, remainingDistance);
                 break;
+            }
+
+            if (goalHandle->is_canceling())
+            {
+                sendCommand(geometry_msgs::msg::Twist());
+
+                auto result                = std::make_shared<NavigationGoal::Result>();
+                result->success            = false;
+                result->remaining_distance = remainingDistance;
+                result->remaining_angle    = remainingAngle;
+                goalHandle->canceled(result);
+                RCLCPP_INFO(get_logger(), "Goal canceled");
+                return;
             }
 
             geometry_msgs::msg::Twist command;

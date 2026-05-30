@@ -1,0 +1,6 @@
+repositories:
+  src/thirdparty/BehaviorTree.ROS2:
+    type: git
+    url: git@github.com:BehaviorTree/BehaviorTree.ROS2.git
+    version: humble
+

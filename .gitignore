@@ -8,3 +8,6 @@ log
 
 # Editor stuff
 .vscode
+
+# Third party
+src/thirdparty

@@ -3,4 +3,7 @@ repositories:
     type: git
     url: git@github.com:BehaviorTree/BehaviorTree.ROS2.git
     version: humble
-
+  src/thirdparty/turtleler_sim:
+    type: git
+    url: git@github.com:jamacias/turtleler_sim.git
+    version: kilted
